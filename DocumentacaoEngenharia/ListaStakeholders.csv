@@ -1,0 +1,163 @@
+1a Tentativa: 
+
+
+Com o banco funcionando: 
+
+
+1) No Terminal, logado como root digite: 
+
+gedit /etc/mysql/my.cnf
+
+
+3) Altere o arquivo conforme abaixo: 
+
+Com o arquivo aberto localizar onde está a marcação [mysqld] e adicionar o código a seguir logo abaixo e salvar o arquivo: 
+
+skip-grant-tables
+
+
+Lembre-se de incluir o comentário da linha que fizemos na primeira tentativa, deve ficar assim: 
+default-authentication-plugin=mysql_native_password
+
+
+
+5) Ainda com o usuário root (SO), tente logar como root (MySQL): 
+
+mysql -u root -p
+
+
+6) Execute os comandos abaixo no terminal do cliente MySQL: 
+
+
+flush privileges;
+
+ALTER USER 'root'@'localhost' IDENTIFIED BY 'NewPassword';
+
+GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' WITH GRANT OPTION;
+
+GRANT ALL PRIVILEGES ON *.* TO 'root'@'localhost' WITH GRANT OPTION;
+
+flush privileges;
+
+
+7) Editar novamente o arquivo de configuração do banco dados e remover a instrução skip-grant-tables inserida no passo 3
+
+
+8) Reiniciar o banco dados: 
+
+systemctl restart mysqld
+
+
+9) Tentar novamente se logar
+
+mysql -u root -p
+
+
+
+-------------------
+
+
+
+2a Tentativa: 
+
+
+1) Pare o MySQL (logado como root)
+
+systemctl stop mysqld.service
+
+
+2) Inicie no modo Safe (copie e cole):
+
+mysqld_safe --skip-grant-tables
+
+
+3) Abra outro Terminal e tente logar com o comando abaixo (copie e cole):
+
+mysql -u root
+
+
+4) Se conseguir, execute: 
+
+UPDATE mysql.user SET Password=PASSWORD('password') WHERE User='root';
+
+-> altere password para sua a sua senha
+
+
+5) Saia dos dois terminais
+
+
+6) Abra um novo Terminal e inicie o MySQL
+
+systemctl start mysql
+
+
+7) Tente logar normalmente
+
+mysql -u root -p
+
+
+
+
+--------------------------
+
+
+
+3a Tentativa: 
+
+
+1) Pare o MySQL daemon se estiver rodando: 
+
+
+Verifique se o serviço está ativo :
+
+ps -ef | grep mysql
+
+Se retornar alguma linha de informação execute o comando abaixo: 
+
+pkill mysqld
+
+
+
+2) Rode o comando abaixo para entrar no Safe Mode com skipping grant tables (executando em segundo plano)
+
+mysqld_safe --skip-grant-tables &
+
+
+3) Se logue em outro terminal com o usuário root e rode o comando abaixo (sem -p mesmo)
+
+mysql -u root mysql
+
+
+4) Rode os comandos abaixo para resetar a senha do root:
+
+
+FLUSH PRIVILEGES;
+
+ALTER USER 'root'@'localhost' IDENTIFIED BY 'new_password';
+
+UPDATE mysql.user SET authentication_string = PASSWORD('new_password') WHERE User = 'root' AND Host = 'localhost';
+
+
+5) Para o MySQL
+
+systemctl stop mysql
+
+
+6) Inicie o MySQL
+
+systemctl start mysql
+
+
+7) Tente acessar com a senha
+
+
+---------
+
+
+Se nada funcionar: 
+
+
+Baixar a VM pronta com o MySQL e importa no VirtualBox: 
+
+https://drive.google.com/file/d/1nPFwTiXKAorZfg_cDDXB9MLZnQhWObuz/view?usp=sharing
+
